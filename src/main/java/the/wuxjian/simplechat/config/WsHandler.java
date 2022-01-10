@@ -13,7 +13,7 @@ import java.util.concurrent.ConcurrentHashMap;
 
 
 @Service
-public class MyHandler implements WebSocketHandler {
+public class WsHandler implements WebSocketHandler {
 
     //在线用户列表
     private static final Map<String, WebSocketSession> users = new ConcurrentHashMap<>();

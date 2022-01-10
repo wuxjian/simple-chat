@@ -15,7 +15,7 @@ public class WebSocketConfig implements WebSocketConfigurer {
     public void registerWebSocketHandlers(WebSocketHandlerRegistry registry) {
 
         //handler是webSocket的核心，配置入口
-        registry.addHandler(new MyHandler(), "/myHandler/{ID}")
+        registry.addHandler(new WsHandler(), "/myHandler/{ID}")
                 .setAllowedOrigins("*").addInterceptors(new WebSocketInterceptor());
 
     }
