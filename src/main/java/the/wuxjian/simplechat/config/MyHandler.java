@@ -9,18 +9,14 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 
 
 @Service
 public class MyHandler implements WebSocketHandler {
 
     //在线用户列表
-    private static final Map<String, WebSocketSession> users;
-
-
-    static {
-        users = new HashMap<>();
-    }
+    private static final Map<String, WebSocketSession> users = new ConcurrentHashMap<>();
 
     //新增socket
     @Override

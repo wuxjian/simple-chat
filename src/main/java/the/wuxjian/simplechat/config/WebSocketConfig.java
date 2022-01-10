@@ -9,7 +9,7 @@ import org.springframework.web.socket.config.annotation.WebSocketHandlerRegistry
 //实现接口来配置Websocket请求的路径和拦截器。
 @Configuration
 @EnableWebSocket
-public class WebSocketH5Config implements WebSocketConfigurer {
+public class WebSocketConfig implements WebSocketConfigurer {
 
     @Override
     public void registerWebSocketHandlers(WebSocketHandlerRegistry registry) {
