@@ -5,7 +5,6 @@ import the.wuxjian.simplechat.dto.User;
 
 import java.util.Collection;
 import java.util.Map;
-import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 

@@ -18,7 +18,6 @@ public class WebSocketInterceptor implements HandshakeInterceptor {
     public boolean beforeHandshake(ServerHttpRequest request, ServerHttpResponse serverHttpResponse,
                                    WebSocketHandler webSocketHandler, Map<String, Object> attributes) throws Exception {
         if (request instanceof ServletServerHttpRequest) {
-            ServletServerHttpRequest r = (ServletServerHttpRequest) request;
             String uid = request.getURI().toString().split("uid=")[1];
             attributes.put("uid", uid);
             return true;
