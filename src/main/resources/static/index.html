@@ -11,10 +11,15 @@
 </head>
 
 <body>
+Welcome <br/>
+<input type="text" id="name">
+<button onclick="connect()">连接</button>
+<br/>
 
-Welcome<br/>
 <input id="text" type="text"/>
-<button onclick="send()">Send</button>
+
+
+<button onclick="send()">发送</button>
 <button onclick="closeWebSocket()">Close</button>
 <div id="message">
 </div>
@@ -23,13 +28,15 @@ Welcome<br/>
 
 
 <script type="text/javascript">
-    var userID = "888";
+    var userID = "";
     var websocket = null;
-    $(function () {
 
-        //创建WebSocket
-        connectWebSocket();
-    })
+    function connect() {
+        $.post("/login", {name: $('#name').val()}, function (res) {
+            userID = res.uid;
+            connectWebSocket();
+        })
+    }
 
     //强制关闭浏览器  调用websocket.close（）,进行正常关闭
     window.onunload = function () {
