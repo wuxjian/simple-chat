@@ -2,6 +2,10 @@ package the.wuxjian.simplechat.message;
 
 import lombok.Builder;
 import lombok.Data;
+import the.wuxjian.simplechat.dto.User;
+
+import java.util.Collection;
+import java.util.List;
 
 /**
  * Created by wuxjian 2022/1/10
@@ -13,6 +17,31 @@ public class Message {
     private String messageType;
     private String from;
     private String to;
-    private String content;
-    private boolean sys;  // 系统消息
+    private Object payload;
+
+
+    public static Message loginMessage(String uid) {
+        return Message.builder()
+                .from("-1")
+                .messageType(MessageType.LOGIN.code)
+                .payload(uid)
+                .build();
+    }
+
+    public static Message logoutMessage(String uid) {
+        return Message.builder()
+                .from("-1")
+                .messageType(MessageType.LOGOUT.code)
+                .payload(uid)
+                .build();
+    }
+
+    public static Message allUserMessage(Collection<User> userList) {
+        return Message.builder()
+                .from("-1")
+                .messageType(MessageType.ALL_USERS.code)
+                .payload(userList)
+                .build();
+    }
+
 }

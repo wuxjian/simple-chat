@@ -3,7 +3,9 @@ package the.wuxjian.simplechat.service;
 import org.springframework.stereotype.Service;
 import the.wuxjian.simplechat.dto.User;
 
+import java.util.Collection;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -24,6 +26,10 @@ public class UserService {
 
     public void logout(String uid) {
         users.remove(uid);
+    }
+
+    public Collection<User> allUser() {
+        return users.values();
     }
 
 }

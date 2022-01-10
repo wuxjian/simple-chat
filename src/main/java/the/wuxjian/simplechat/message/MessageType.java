@@ -9,9 +9,10 @@ import lombok.Getter;
 @AllArgsConstructor
 @Getter
 public enum MessageType {
-    TEXT("1000", "文本"),
-    PICTURE("1001", "图像"),
-
+    LOGIN("1000", "上线"),
+    LOGOUT("1001", "下线"),
+    ALL_USERS("1002", "所有用户"),
+    SINGLE("1003", "单聊"),
     ;
     public String code;
     public String name;
