@@ -1,90 +1,108 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>socket.html</title>
-
-    <meta name="keywords" content="keyword1,keyword2,keyword3">
-    <meta name="description" content="this is my page">
+    <title>simple-chat</title>
     <meta name="content-type" content="text/html" charset="UTF-8">
-    <!--<link rel="stylesheet" type="text/css" href="./styles.css">-->
-
+    <script src="https://cdn.jsdelivr.net/npm/vue@2.6.14/dist/vue.js"></script>
+    <link href="https://cdn.bootcdn.net/ajax/libs/twitter-bootstrap/4.6.1/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        html, body {
+            margin: 0;
+            padding: 0;
+        }
+        .avatar {
+            display: inline-block;
+            height: 36px;
+            width: 36px;
+            text-align: center;
+            line-height: 36px;
+            color: #fff;
+        }
+    </style>
 </head>
 
 <body>
-Welcome <br/>
-<input type="text" id="name">
-<button onclick="connect()">连接</button>
-<br/>
+<div id="app">
+    <div v-if="!login" style="height: 40vh">
+        <form class="form-inline justify-content-center h-50 align-items-center">
+            <label>用户名</label><input v-model="username" type="text" class="form-control">
+            <button type="button" class="btn btn-success ml-2" @click="handleSubmit">登录</button>
+        </form>
+    </div>
 
-<input id="text" type="text"/>
 
-
-<button onclick="send()">发送</button>
-<button onclick="closeWebSocket()">Close</button>
-<div id="message">
+    <div v-if="login" style="display: flex">
+        <div style="width: 300px; height: 100vh; border-right: 1px solid #ccc">
+            <ul class="list-group">
+                <li v-for="user in users" :key="user.uid" class="list-group-item" >
+                    <span class="rounded-circle bg-success mr-2 avatar">{{user.name[0]}}</span>
+                    {{ user.name }}
+                    <span v-if="user.uid === currentUser.uid" class="badge badge-light text-danger">自己</span>
+                </li>
+            </ul>
+        </div>
+        <div style="flex: 1">
+            23423432
+        </div>
+    </div>
 </div>
-<!-- 公共JS -->
-<script src="https://cdn.bootcdn.net/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
-
+</body>
 
 <script type="text/javascript">
-    var userID = "";
-    var websocket = null;
 
-    function connect() {
-        $.post("/login", {name: $('#name').val()}, function (res) {
-            userID = res.uid;
-            connectWebSocket();
-        })
-    }
+    var app = new Vue({
+        el: '#app',
+        data: {
+            login: false,
+            username: '',
+            currentUser: {},
+            ws: null,
+            users: []
+        },
+        methods: {
+            handleSubmit: function () {
+                if (!this.username.trim()) {
+                    return
+                }
+                fetch('/login', {
+                    method: 'POST',
+                    body: 'name=' + this.username,
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded'
+                    }
+                }).then(resp => resp.json())
+                    .then(res => {
+                        this.currentUser = res;
+                        this.login = true
+                        this.initWebsocket()
+                    })
+            },
+            initWebsocket: function () {
+                let websocket = new WebSocket(`ws://${location.host}/chat?uid=${this.currentUser.uid}`);
+                this.ws = websocket;
+                let _that = this;
+                websocket.onopen = function () {
+                    console.log("连接成功");
+                }
 
-    //强制关闭浏览器  调用websocket.close（）,进行正常关闭
-    window.onunload = function () {
+                websocket.onclose = function () {
+                    console.log("连接关闭");
+                }
 
-        //关闭连接
-        closeWebSocket();
-    }
-
-    //建立WebSocket连接
-    function connectWebSocket() {
-
-        console.log("开始...");
-
-        //建立webSocket连接
-        websocket = new WebSocket("ws://127.0.0.1/chat?uid=" + userID);
-
-        //打开webSokcet连接时，回调该函数
-        websocket.onopen = function () {
-            console.log("onpen");
+                websocket.onmessage = function (msg) {
+                    let message = JSON.parse(msg.data)
+                    if (message.messageType === '1000') {
+                        console.log(`[${message.payload}]上线了`)
+                    } else if (message.messageType === '1001') {
+                        console.log(`[${message.payload}]上线了`)
+                    } else if (message.messageType === '1002') {
+                        _that.users = message.payload
+                    }
+                }
+            }
         }
+    });
 
-        //关闭webSocket连接时，回调该函数
-        websocket.onclose = function () {
-            //关闭连接
-            console.log("onclose");
-        }
-
-        //接收信息
-        websocket.onmessage = function (msg) {
-            console.log(msg.data);
-        }
-    }
-
-    //发送消息
-    function send() {
-        var postValue = {};
-        postValue.id = userID;
-        postValue.message = $("#text").val();
-        websocket.send(JSON.stringify(postValue));
-    }
-
-    //关闭连接
-    function closeWebSocket() {
-        if (websocket != null) {
-            websocket.close();
-        }
-    }
 
 </script>
-</body>
 </html>
