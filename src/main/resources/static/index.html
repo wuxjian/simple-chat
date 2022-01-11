@@ -33,11 +33,15 @@
 
     <div v-if="login" style="display: flex">
         <div style="width: 300px; height: 100vh; border-right: 1px solid #ccc">
+            <div class="p-3 mb-2 bg-primary text-white">你好: {{currentUser.name}}</div>
+            <div style="font-size: 12px; text-align: right">
+                在线用户数: {{users.length}}
+            </div>
             <ul class="list-group">
-                <li v-for="user in users" :key="user.uid" :class="{'bg-primary': chatUser.uid == user.uid}" class="list-group-item" @click="chooseChatUser(user)">
+                <li v-if="user.uid !== currentUser.uid" v-for="user in users" :key="user.uid" :class="{'bg-primary': chatUser.uid == user.uid}" class="list-group-item" @click="chooseChatUser(user)">
                     <span class="rounded-circle bg-success mr-2 avatar">{{user.name[0]}}</span>
                     {{ user.name }}
-                    <span v-if="user.uid === currentUser.uid" class="badge badge-light text-danger">自己</span>
+<!--                    <span v-if="user.uid === currentUser.uid" class="badge badge-light text-danger">自己</span>-->
                 </li>
             </ul>
         </div>
