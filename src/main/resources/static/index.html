@@ -34,7 +34,7 @@
     <div v-if="login" style="display: flex">
         <div style="width: 300px; height: 100vh; border-right: 1px solid #ccc">
             <ul class="list-group">
-                <li v-for="user in users" :key="user.uid" class="list-group-item" >
+                <li v-for="user in users" :key="user.uid" :class="{'bg-primary': chatUser.uid == user.uid}" class="list-group-item" @click="chooseChatUser(user)">
                     <span class="rounded-circle bg-success mr-2 avatar">{{user.name[0]}}</span>
                     {{ user.name }}
                     <span v-if="user.uid === currentUser.uid" class="badge badge-light text-danger">自己</span>
@@ -55,7 +55,8 @@
         data: {
             login: false,
             username: '',
-            currentUser: {},
+            currentUser: {}, // 当前登录用户
+            chatUser: {},
             ws: null,
             users: []
         },
@@ -77,6 +78,11 @@
                         this.initWebsocket()
                     })
             },
+
+            chooseChatUser: function (user) {
+                this.chatUser = user;
+            },
+
             initWebsocket: function () {
                 let websocket = new WebSocket(`ws://${location.host}/chat?uid=${this.currentUser.uid}`);
                 this.ws = websocket;
