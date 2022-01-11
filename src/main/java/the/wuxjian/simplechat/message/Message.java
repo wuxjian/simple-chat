@@ -5,7 +5,6 @@ import lombok.Data;
 import the.wuxjian.simplechat.dto.User;
 
 import java.util.Collection;
-import java.util.List;
 
 /**
  * Created by wuxjian 2022/1/10

@@ -41,16 +41,32 @@
                 </li>
             </ul>
         </div>
-        <div style="flex: 1">
-            23423432
+        <div v-if="chatUser.uid" class="d-flex flex-column" style="flex: 1">
+            <div style="height: 80px; border-bottom: 1px solid #ccc" class="p-4">
+                <span class="badge badge-info">{{chatUser.name}}</span>
+            </div>
+            <div class="flex-fill">
+                <li v-for="item in chatData[chatUser.uid]" :key="item.messageId"  class="list-group-item d-flex"
+                        :class="{'flex-row-reverse': item.from === currentUser.uid}">
+                    <span class="rounded-circle bg-success mr-2 avatar">
+                        <span v-if="item.from === currentUser.uid">我</span>
+                        <span v-if="item.from !== currentUser.uid">{{usersMap[item.from].name[0]}}</span>
+                    </span>
+                    {{ item.payload }}
+                </li>
+            </div>
+
+            <div class="d-flex" style="height: 100px">
+                <input class="flex-fill form-control h-100" type="text" v-model="msg">
+                <button class="btn btn-primary" @click="send">发送</button>
+            </div>
         </div>
     </div>
 </div>
 </body>
 
 <script type="text/javascript">
-
-    var app = new Vue({
+    let app = new Vue({
         el: '#app',
         data: {
             login: false,
@@ -58,7 +74,10 @@
             currentUser: {}, // 当前登录用户
             chatUser: {},
             ws: null,
-            users: []
+            users: [],
+            usersMap: {},
+            msg: '',
+            chatData: {}
         },
         methods: {
             handleSubmit: function () {
@@ -78,9 +97,32 @@
                         this.initWebsocket()
                     })
             },
+            send() {
+                if (!this.msg || !this.msg.trim()) {
+                    return
+                }
+                let message = {
+                    messageId: randomString(32),
+                    messageType: '1003',
+                    from: this.currentUser.uid,
+                    to: this.chatUser.uid,
+                    payload: this.msg.trim()
+                }
+                this.msg = '';
+                let chatList = this.chatData[message.to] || []
+                chatList.push(message)
+                Vue.set(this.chatData, message.to, chatList)
+                this.ws.send(JSON.stringify(message))
 
+            },
             chooseChatUser: function (user) {
                 this.chatUser = user;
+            },
+            close() {
+                this.login = false;
+                this.currentUser = {}
+                this.chatUser = {}
+                this.chatData = {}
             },
 
             initWebsocket: function () {
@@ -93,9 +135,10 @@
 
                 websocket.onclose = function () {
                     console.log("连接关闭");
+                    _that.close()
                 }
 
-                websocket.onmessage = function (msg) {
+                websocket.onmessage = (msg) => {
                     let message = JSON.parse(msg.data)
                     if (message.messageType === '1000') {
                         console.log(`[${message.payload}]上线了`)
@@ -103,12 +146,28 @@
                         console.log(`[${message.payload}]下线了`)
                     } else if (message.messageType === '1002') {
                         _that.users = message.payload
+                        for (let i = 0; i < _that.users.length; i++) {
+                            _that.usersMap[_that.users[i].uid] = _that.users[i]
+                        }
+                    } else if (message.messageType === '1003') {
+                        let chatList = this.chatData[message.from] || []
+                        chatList.push(message)
+                        Vue.set(this.chatData, message.from, chatList)
                     }
                 }
             }
         }
     });
 
-
+    function randomString(len) {
+        len = len || 32;
+        var $chars = 'ABCDEFGHJKMNPQRSTWXYZabcdefhijkmnprstwxyz2345678';
+        var maxPos = $chars.length;
+        var pwd = '';
+        for (i = 0; i < len; i++) {
+            pwd += $chars.charAt(Math.floor(Math.random() * maxPos));
+        }
+        return pwd;
+    }
 </script>
 </html>

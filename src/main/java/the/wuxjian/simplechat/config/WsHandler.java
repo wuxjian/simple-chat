@@ -21,7 +21,7 @@ import java.util.concurrent.ConcurrentHashMap;
 @Service
 @Slf4j
 public class WsHandler implements WebSocketHandler {
-    @Autowired
+    @Resource
     private UserService userService;
 
     //在线用户列表
