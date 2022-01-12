@@ -2,12 +2,12 @@ package the.wuxjian.simplechat.service;
 
 import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.json.JSONUtil;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.DisposableBean;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 import the.wuxjian.simplechat.dto.User;
 
-import javax.annotation.PreDestroy;
 import javax.annotation.Resource;
 import java.util.Collection;
 import java.util.Collections;
@@ -20,6 +20,7 @@ import java.util.stream.Collectors;
  * Created by wuxjian 2022/1/10
  */
 @Service
+@Slf4j
 public class UserService implements DisposableBean {
 
     private static final String USER_KEY = "users";
@@ -53,6 +54,7 @@ public class UserService implements DisposableBean {
 
     @Override
     public void destroy() {
+        log.info("destroy");
         if (!users.isEmpty()) {
             redisTemplate.opsForHash().delete(USER_KEY, users.keySet().toArray());
         }
