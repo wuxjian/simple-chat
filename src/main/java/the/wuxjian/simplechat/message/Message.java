@@ -1,7 +1,9 @@
 package the.wuxjian.simplechat.message;
 
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 import the.wuxjian.simplechat.dto.User;
 
 import java.util.Collection;
@@ -11,6 +13,8 @@ import java.util.Collection;
  */
 @Data
 @Builder
+@NoArgsConstructor
+@AllArgsConstructor
 public class Message {
     private String messageId;
     private String messageType;

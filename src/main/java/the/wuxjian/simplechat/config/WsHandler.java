@@ -1,12 +1,14 @@
 package the.wuxjian.simplechat.config;
 
 import cn.hutool.json.JSONUtil;
+import com.alibaba.fastjson.JSON;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.web.socket.*;
 import the.wuxjian.simplechat.dto.User;
 import the.wuxjian.simplechat.message.Message;
+import the.wuxjian.simplechat.redis.Notice;
 import the.wuxjian.simplechat.service.UserService;
 
 import javax.annotation.Resource;
@@ -23,6 +25,8 @@ import java.util.concurrent.ConcurrentHashMap;
 public class WsHandler implements WebSocketHandler {
     @Resource
     private UserService userService;
+    @Resource
+    private RedisTemplate<String, String> redisTemplate;
 
     //在线用户列表
     private static final Map<String, WebSocketSession> uidSessionMap = new ConcurrentHashMap<>();
@@ -32,16 +36,37 @@ public class WsHandler implements WebSocketHandler {
         String uid = (String) session.getAttributes().get("uid");
         uidSessionMap.put(uid, session);
 
-        broadLoginMessage(uid);
-        broadAllUserMessage();
+        redisTemplate.convertAndSend("chat", JSON.toJSONString(Notice.login(uid)));
     }
 
     //接收socket信息
     @Override
     public void handleMessage(WebSocketSession webSocketSession, WebSocketMessage<?> webSocketMessage) throws Exception {
         Message message = JSONUtil.toBean((String) webSocketMessage.getPayload(), Message.class);
-        sendMessage(message);
+        redisTemplate.convertAndSend("chat", JSON.toJSONString(Notice.chat(message)));
     }
+
+
+    @Override
+    public void handleTransportError(WebSocketSession session, Throwable exception) throws Exception {
+        String uid = (String) session.getAttributes().get("uid");
+        log.info("连接出错:{}", uid);
+        if (session.isOpen()) {
+            session.close();
+        }
+        redisTemplate.convertAndSend("chat", JSON.toJSONString(Notice.logout(uid)));
+    }
+
+    @Override
+    public void afterConnectionClosed(WebSocketSession session, CloseStatus status) throws Exception {
+        String uid = (String) session.getAttributes().get("uid");
+        log.info("连接关闭:{}", uid);
+        if (session.isOpen()) {
+            session.close();
+        }
+        redisTemplate.convertAndSend("chat", JSON.toJSONString(Notice.logout(uid)));
+    }
+
 
     /**
      * 发送信息给指定用户
@@ -61,24 +86,23 @@ public class WsHandler implements WebSocketHandler {
     }
 
     // 广播用户上线
-    private void broadLoginMessage(String uid)  throws IOException {
+    public void broadLoginMessage(String uid) throws IOException {
         Message loginMessage = Message.loginMessage(uid);
         broadcast(loginMessage); // 广播登录消息;
     }
 
     // 广播用户下线
-    private void broadLogoutMessage(String uid)  throws IOException {
+    public void broadLogoutMessage(String uid) throws IOException {
         Message loginMessage = Message.logoutMessage(uid);
-        broadcast(loginMessage);;
+        broadcast(loginMessage);
     }
 
     // 广播所有用户信息
-    private void broadAllUserMessage()  throws IOException {
+    public void broadAllUserMessage() throws IOException {
         Collection<User> users = userService.allUser();
         Message allUserMessage = Message.allUserMessage(users);
         broadcast(allUserMessage);
     }
-
 
 
     /**
@@ -96,35 +120,15 @@ public class WsHandler implements WebSocketHandler {
 
 
     @Override
-    public void handleTransportError(WebSocketSession session, Throwable exception) throws Exception {
-        String uid = (String) session.getAttributes().get("uid");
-        log.info("连接出错:{}", uid);
-        close(session);
-    }
-
-    @Override
-    public void afterConnectionClosed(WebSocketSession session, CloseStatus status) throws Exception {
-        String uid = (String) session.getAttributes().get("uid");
-        log.info("连接关闭:{}", uid);
-        close(session);
-    }
-
-    @Override
     public boolean supportsPartialMessages() {
         return false;
     }
 
-    private void close(WebSocketSession session) throws IOException {
-        String uid = (String) session.getAttributes().get("uid");
+    public void close(String uid) throws IOException {
         uidSessionMap.remove(uid);
         userService.logout(uid);
 
-
         broadLogoutMessage(uid);
         broadAllUserMessage();
-
-        if (session.isOpen()) {
-            session.close();
-        }
     }
 }
