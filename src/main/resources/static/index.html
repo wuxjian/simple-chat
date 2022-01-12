@@ -33,9 +33,9 @@
 
     <div v-if="login" style="display: flex">
         <div style="width: 300px; height: 100vh; border-right: 1px solid #ccc">
-            <div class="p-3 mb-2 bg-primary text-white">你好: {{currentUser.name}}</div>
-            <div style="font-size: 12px; text-align: right">
-                在线用户数: {{users.length}}
+            <div class="p-3 mb-2 bg-secondary text-white">你好: <span class="text-success"></span>{{currentUser.name}}</div>
+            <div style="font-size: 14px; text-align: right">
+                在线用户数: <span class="text-danger">{{users.length}}</span>
             </div>
             <ul class="list-group">
                 <li v-if="user.uid !== currentUser.uid" v-for="user in users" :key="user.uid" :class="{'bg-primary': chatUser.uid == user.uid}" class="list-group-item" @click="chooseChatUser(user)">
@@ -51,10 +51,12 @@
             </div>
             <div class="flex-fill">
                 <li v-for="item in chatData[chatUser.uid]" :key="item.messageId"  class="list-group-item d-flex"
-                        :class="{'flex-row-reverse': item.from === currentUser.uid}">
-                    <span class="rounded-circle bg-success mr-2 avatar">
+                        :class="{'flex-row-reverse': item.from === currentUser.uid}" style="line-height: 36px">
+                    <span v-if="item.from === currentUser.uid" class="rounded-circle bg-danger mr-2 ml-2 avatar">
                         <span v-if="item.from === currentUser.uid">我</span>
-                        <span v-if="item.from !== currentUser.uid">{{usersMap[item.from].name[0]}}</span>
+                    </span>
+                    <span v-if="item.from !== currentUser.uid" class="rounded-circle bg-success mr-2 ml-2 avatar">
+                        {{usersMap[item.from].name[0]}}
                     </span>
                     {{ item.payload }}
                 </li>
@@ -62,7 +64,7 @@
 
             <div class="d-flex" style="height: 100px">
                 <input class="flex-fill form-control h-100" type="text" v-model="msg">
-                <button class="btn btn-primary" @click="send">发送</button>
+                <button class="btn btn-primary" @click="send" style="width: 100px">发送</button>
             </div>
         </div>
     </div>
