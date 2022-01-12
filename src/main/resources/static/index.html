@@ -52,9 +52,11 @@
             <div class="flex-fill">
                 <li v-for="item in chatData[chatUser.uid]" :key="item.messageId"  class="list-group-item d-flex"
                         :class="{'flex-row-reverse': item.from === currentUser.uid}" style="line-height: 36px">
-                    <span class="rounded-circle bg-success mr-2 ml-2 avatar">
+                    <span v-if="item.from === currentUser.uid" class="rounded-circle bg-danger mr-2 ml-2 avatar">
                         <span v-if="item.from === currentUser.uid">我</span>
-                        <span v-if="item.from !== currentUser.uid">{{usersMap[item.from].name[0]}}</span>
+                    </span>
+                    <span v-if="item.from !== currentUser.uid" class="rounded-circle bg-success mr-2 ml-2 avatar">
+                        {{usersMap[item.from].name[0]}}
                     </span>
                     {{ item.payload }}
                 </li>
