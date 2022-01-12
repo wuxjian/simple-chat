@@ -21,11 +21,9 @@ public class RedisConfig {
 
     /**
      * redisTemplate 序列化默认使用的jdk Serializable, 存储二进制字节码, 所以自定义序列化类
-     * @param redisConnectionFactory
-     * @return
      */
     @Bean
-    public RedisTemplate redisTemplate(RedisConnectionFactory redisConnectionFactory) {
+    public RedisTemplate<Serializable, Object> redisTemplate(RedisConnectionFactory redisConnectionFactory) {
         RedisTemplate<Serializable, Object> redisTemplate = new RedisTemplate<>();
         redisTemplate.setConnectionFactory(redisConnectionFactory);
         // 使用Jackson2JsonRedisSerialize替换默认序列化
