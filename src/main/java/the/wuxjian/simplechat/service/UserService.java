@@ -4,6 +4,7 @@ import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.json.JSONUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.DisposableBean;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 import the.wuxjian.simplechat.dto.User;
@@ -22,6 +23,8 @@ import java.util.stream.Collectors;
 @Service
 @Slf4j
 public class UserService implements DisposableBean {
+    @Value("${server.port}")
+    private String serverPort;
 
     private static final String USER_KEY = "users";
     private static final Map<String, User> users = new ConcurrentHashMap<>();
@@ -30,6 +33,7 @@ public class UserService implements DisposableBean {
 
 
     public User login(String name) {
+        name += "-" + serverPort;
         String uid = UUID.randomUUID().toString();
         User user = User.builder().name(name).uid(uid).build();
         redisTemplate.opsForHash().put(USER_KEY, uid, JSONUtil.toJsonStr(user));
