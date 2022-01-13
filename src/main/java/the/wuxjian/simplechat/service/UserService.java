@@ -23,8 +23,6 @@ import java.util.stream.Collectors;
 @Service
 @Slf4j
 public class UserService implements DisposableBean {
-    @Value("${server.port}")
-    private String serverPort;
 
     private static final String USER_KEY = "users";
     private static final Map<String, User> users = new ConcurrentHashMap<>();
@@ -33,7 +31,6 @@ public class UserService implements DisposableBean {
 
 
     public User login(String name) {
-        name += "-" + serverPort;
         String uid = UUID.randomUUID().toString();
         User user = User.builder().name(name).uid(uid).build();
         redisTemplate.opsForHash().put(USER_KEY, uid, JSONUtil.toJsonStr(user));

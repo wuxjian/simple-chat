@@ -3,6 +3,7 @@ package the.wuxjian.simplechat.config;
 import cn.hutool.json.JSONUtil;
 import com.alibaba.fastjson.JSON;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.web.socket.*;
@@ -13,11 +14,9 @@ import the.wuxjian.simplechat.service.UserService;
 
 import javax.annotation.Resource;
 import java.io.IOException;
-import java.util.Collection;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.stream.Collectors;
 
 
 @Service
@@ -27,6 +26,8 @@ public class WsHandler implements WebSocketHandler {
     private UserService userService;
     @Resource
     private RedisTemplate<String, String> redisTemplate;
+    @Value("${server.port}")
+    private String serverPort;
 
     //在线用户列表
     private static final Map<String, WebSocketSession> uidSessionMap = new ConcurrentHashMap<>();
@@ -37,6 +38,8 @@ public class WsHandler implements WebSocketHandler {
         uidSessionMap.put(uid, session);
 
         redisTemplate.convertAndSend("chat", JSON.toJSONString(Notice.login(uid)));
+
+        printCurrentUser();
     }
 
     //接收socket信息
@@ -55,6 +58,7 @@ public class WsHandler implements WebSocketHandler {
             session.close();
         }
         redisTemplate.convertAndSend("chat", JSON.toJSONString(Notice.logout(uid)));
+        printCurrentUser();
     }
 
     @Override
@@ -65,6 +69,7 @@ public class WsHandler implements WebSocketHandler {
             session.close();
         }
         redisTemplate.convertAndSend("chat", JSON.toJSONString(Notice.logout(uid)));
+        printCurrentUser();
     }
 
 
@@ -75,7 +80,7 @@ public class WsHandler implements WebSocketHandler {
         String to = message.getTo();
         WebSocketSession session = uidSessionMap.get(to);
         if (Objects.isNull(session)) {
-            log.info("不存在用户{}", to);
+//            log.info("不存在用户{}", to);
             return;
         }
         if (session.isOpen()) {
@@ -130,5 +135,14 @@ public class WsHandler implements WebSocketHandler {
 
         broadLogoutMessage(uid);
         broadAllUserMessage();
+    }
+
+
+    private void printCurrentUser() {
+        Collection<User> users = userService.allUser();
+        List<User> list = users.stream()
+                .filter(i -> uidSessionMap.containsKey(i.getUid()))
+                .collect(Collectors.toList());
+        log.info("server【{}】在线:{}", serverPort, list);
     }
 }
