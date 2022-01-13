@@ -39,7 +39,7 @@ public class WsHandler implements WebSocketHandler {
 
         redisTemplate.convertAndSend("chat", JSON.toJSONString(Notice.login(uid)));
 
-        printCurrentUser();
+        printOnlineUser();
     }
 
     //接收socket信息
@@ -58,7 +58,7 @@ public class WsHandler implements WebSocketHandler {
             session.close();
         }
         redisTemplate.convertAndSend("chat", JSON.toJSONString(Notice.logout(uid)));
-        printCurrentUser();
+        printOnlineUser();
     }
 
     @Override
@@ -69,7 +69,7 @@ public class WsHandler implements WebSocketHandler {
             session.close();
         }
         redisTemplate.convertAndSend("chat", JSON.toJSONString(Notice.logout(uid)));
-        printCurrentUser();
+        printOnlineUser();
     }
 
 
@@ -138,7 +138,8 @@ public class WsHandler implements WebSocketHandler {
     }
 
 
-    private void printCurrentUser() {
+    // 打印在线用户
+    private void printOnlineUser() {
         Collection<User> users = userService.allUser();
         List<User> list = users.stream()
                 .filter(i -> uidSessionMap.containsKey(i.getUid()))
